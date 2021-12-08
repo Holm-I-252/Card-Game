@@ -1,25 +1,42 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import axios from "axios";
+import "./App.css";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component {
+  constructor() {
+    super();
+    this.state = {
+      deck: {},
+      userHand: {},
+    };
+  }
+  async getDeck() {
+    let res = await axios.get(
+      "https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1"
+    );
+    this.setState({
+      deck: { deckId: res.data.deck_id, remaining: res.data.remaining },
+    });
+    console.log(this.state.deck);
+  }
+
+  async drawCard() {
+    let res = await axios.get(
+      `https://deckofcardsapi.com/api/deck/${this.state.deck.deckId}/draw/?count=1`
+    );
+    this.setState({
+      deck: { deckId: res.data.deck_id, remaining: res.data.remaining },
+    });
+    console.log(res.data.cards);
+  }
+  render() {
+    return (
+      <div className="App">
+        <button onClick={(e) => this.getDeck(e)}>Get Deck</button>
+        <button onClick={(e) => this.drawCard(e)}>Draw Card</button>
+      </div>
+    );
+  }
 }
 
 export default App;
