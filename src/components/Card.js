@@ -6,9 +6,7 @@ class Card extends Component {
     this.state = {};
   }
 
-  getCards() {
-    console.log(this.props.hand);
-  }
+  getCards() {}
 
   componentDidUpdate() {
     this.getCards();
