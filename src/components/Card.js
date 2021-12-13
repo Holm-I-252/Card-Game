@@ -5,10 +5,24 @@ class Card extends Component {
     super();
     this.state = {};
   }
+
+  getCards() {
+    console.log(this.props.hand);
+  }
+
+  componentDidUpdate() {
+    this.getCards();
+  }
+
   render() {
+    let handList = this.props.hand.map((d) => (
+      <li className="card">
+        <img src={d[1]} alt={d[2]} className="cardPic"></img>
+      </li>
+    ));
     return (
       <div className="cards">
-        <p>{this.props.hand}</p>
+        <ul className="cardList">{handList}</ul>
       </div>
     );
   }
