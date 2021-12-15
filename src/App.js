@@ -86,7 +86,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <h1 className="title">Card Game</h1>
+        <h1 className="title">Card Game (Work In Progress)</h1>
         <h2 className="description">
           Start by clicking get deck, then add a single card or choose a number
           to draw.
