@@ -10,6 +10,7 @@ class App extends Component {
     this.state = {
       deck: {},
       userHand: [],
+      compHand: [],
       drawNumber: "",
       stack: [[0, blank, 0]],
     };
@@ -25,6 +26,25 @@ class App extends Component {
       deck: { deckId: res.data.deck_id, remaining: res.data.remaining },
     });
     console.log(this.state.deck);
+  }
+
+  async drawCompCard() {
+    let res = await axios.get(
+      `https://deckofcardsapi.com/api/deck/${this.state.deck.deckId}/draw/?count=1`
+    );
+    this.setState({
+      deck: { deckId: res.data.deck_id, remaining: res.data.remaining },
+    });
+    this.setState({
+      compHand: [
+        ...this.state.compHand,
+        [
+          res.data.cards[0].value,
+          res.data.cards[0].image,
+          res.data.cards[0].code,
+        ],
+      ],
+    });
   }
 
   async drawCard() {
@@ -44,11 +64,11 @@ class App extends Component {
         ],
       ],
     });
+    this.drawCompCard();
     console.log(this.state.deck);
   }
 
-  async drawHand(event) {
-    event.preventDefault();
+  async compDrawHand() {
     let res = await axios.get(
       `https://deckofcardsapi.com/api/deck/${this.state.deck.deckId}/draw/?count=${this.state.drawNumber}`
     );
@@ -57,14 +77,39 @@ class App extends Component {
     });
     res.data.cards.forEach((element) => {
       this.setState({
-        userHand: [
-          ...this.state.userHand,
+        compHand: [
+          ...this.state.compHand,
           [element.value, element.image, element.code],
         ],
       });
     });
-    console.log(this.state.deck);
-    this.setState({ drawNumber: 0 });
+  }
+
+  async drawHand(event) {
+    if (this.state.drawNumber <= 26) {
+      event.preventDefault();
+      let res = await axios.get(
+        `https://deckofcardsapi.com/api/deck/${this.state.deck.deckId}/draw/?count=${this.state.drawNumber}`
+      );
+      this.setState({
+        deck: { deckId: res.data.deck_id, remaining: res.data.remaining },
+      });
+      res.data.cards.forEach((element) => {
+        this.setState({
+          userHand: [
+            ...this.state.userHand,
+            [element.value, element.image, element.code],
+          ],
+        });
+      });
+
+      this.compDrawHand();
+
+      console.log(this.state.deck);
+      this.setState({ drawNumber: 0 });
+    } else {
+      alert("Number of cards drawn should be less than or equal to 26.");
+    }
   }
 
   handleHand(event) {
@@ -89,7 +134,7 @@ class App extends Component {
         <h1 className="title">Card Game (Work In Progress)</h1>
         <h2 className="description">
           Start by clicking get deck, then add a single card or choose a number
-          to draw.
+          to draw. Drawign a card will add one to your opponent's hand.
         </h2>
         <button onClick={(e) => this.getDeck(e)}>Get Deck</button>
         <button onClick={(e) => this.drawCard(e)}>Draw Card</button>
@@ -101,7 +146,7 @@ class App extends Component {
         >
           <input
             type="text"
-            placeholder="# of cards"
+            placeholder="# of cards (# is <= 26)"
             onChange={this.handleHand}
           ></input>
           <input type="submit"></input>
@@ -109,7 +154,9 @@ class App extends Component {
         <h3 className="cardsLeft">
           Cards Remaining: {this.state.deck.remaining}
         </h3>
+        <p>Opponent's cards left: {this.state.compHand.length}</p>
         <div className="playArea">
+          {/* <p>Cards In Stack:{this.state.stack[0]}</p> */}
           <img
             src={this.state.stack[0][1]}
             alt={this.state.stack[0][2]}
