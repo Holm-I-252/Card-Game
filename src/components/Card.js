@@ -19,8 +19,10 @@ class Card extends Component {
           alt={d[2]}
           className="cardPic"
           onClick={(e) => {
-            this.readHand(d);
-            e.preventDefault();
+            if (this.props.turn === "") {
+              this.readHand(d);
+              e.preventDefault();
+            }
           }}
         ></img>
       </li>

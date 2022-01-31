@@ -13,6 +13,8 @@ class App extends Component {
       compHand: [],
       drawNumber: "",
       stack: [[0, blank, 0]],
+      gameState: "",
+      turn: "",
     };
     this.handleHand = this.handleHand.bind(this);
     this.drawHand = this.drawHand.bind(this);
@@ -48,24 +50,28 @@ class App extends Component {
   }
 
   async drawCard() {
-    let res = await axios.get(
-      `https://deckofcardsapi.com/api/deck/${this.state.deck.deckId}/draw/?count=1`
-    );
-    this.setState({
-      deck: { deckId: res.data.deck_id, remaining: res.data.remaining },
-    });
-    this.setState({
-      userHand: [
-        ...this.state.userHand,
-        [
-          res.data.cards[0].value,
-          res.data.cards[0].image,
-          res.data.cards[0].code,
+    if (this.state.deck.remaining > 0) {
+      let res = await axios.get(
+        `https://deckofcardsapi.com/api/deck/${this.state.deck.deckId}/draw/?count=1`
+      );
+      this.setState({
+        deck: { deckId: res.data.deck_id, remaining: res.data.remaining },
+      });
+      this.setState({
+        userHand: [
+          ...this.state.userHand,
+          [
+            res.data.cards[0].value,
+            res.data.cards[0].image,
+            res.data.cards[0].code,
+          ],
         ],
-      ],
-    });
-    this.drawCompCard();
-    console.log(this.state.deck);
+      });
+      this.drawCompCard();
+      console.log(this.state.deck);
+    } else {
+      alert("No cards remaining in deck.");
+    }
   }
 
   async compDrawHand() {
@@ -128,13 +134,19 @@ class App extends Component {
     this.setState({ userHand: arr });
   }
 
+  componentDidUpdate(prevState) {
+    if (this.state.turn !== prevState.turn) {
+    }
+  }
+
   render() {
     return (
       <div className="App">
         <h1 className="title">Card Game (Work In Progress)</h1>
         <h2 className="description">
           Start by clicking get deck, then add a single card or choose a number
-          to draw. Drawign a card will add one to your opponent's hand.
+          to draw. Drawing a card will add one to your opponent's hand. Then,
+          hit the start button to begin the game.
         </h2>
         <button onClick={(e) => this.getDeck(e)}>Get Deck</button>
         <button onClick={(e) => this.drawCard(e)}>Draw Card</button>
@@ -163,9 +175,37 @@ class App extends Component {
             className="playedCard"
           ></img>
         </div>
+        {(() => {
+          switch (this.state.gameState) {
+            case "start":
+              return (
+                <button
+                  className="endTurnBtn"
+                  onClick={() => {
+                    this.setState({ turn: "comp" });
+                  }}
+                >
+                  End Turn
+                </button>
+              );
+            default:
+              return (
+                <button
+                  className="startBtn"
+                  onClick={() => this.setState({ gameState: "start" })}
+                >
+                  Start Game
+                </button>
+              );
+          }
+        })()}
         <h3 className="handTitle">Your Hand:</h3>
         <div className="handArea">
-          <Card hand={this.state.userHand} setStack={(e) => this.setStack(e)} />
+          <Card
+            hand={this.state.userHand}
+            turn={this.state.turn}
+            setStack={(e) => this.setStack(e)}
+          />
         </div>
       </div>
     );
